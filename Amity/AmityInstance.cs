@@ -7,7 +7,7 @@ using dnlib.DotNet.Emit;
 
 namespace Amity
 {
-    public static class Amity
+    public static class AmityInstance
     {
         /// <summary>
         /// Patch assembly

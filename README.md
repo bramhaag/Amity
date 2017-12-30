@@ -32,7 +32,7 @@ public class Program
 {
     public static void Main()
     {
-        Amity.Patch(typeof(MyPatch), @"C:\MyAssembly.dll", @"C:\MyNewAssembly.dll");
+        AmityInstance.Patch(typeof(MyPatch), @"C:\MyAssembly.dll", @"C:\MyNewAssembly.dll");
     }
 }
 ```

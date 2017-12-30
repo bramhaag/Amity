@@ -1,5 +1,7 @@
 .idea/
 Amity/Assemblies/
+Amity/*.nupkg
+Amity/*.exe
 */bin/
 */obj/
 ConsoleApplication/
