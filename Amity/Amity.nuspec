@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/bramhaag/Amity</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Utility to create simple patches to exitsing assemblies</description>
-    <releaseNotes>Changed Amity class to AmityInstance</releaseNotes>
+    <releaseNotes>Added support for adding variables and fixed typo in documentation</releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>patch cil</tags>
   </metadata>

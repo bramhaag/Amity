@@ -25,7 +25,7 @@ namespace Amity
         /// </summary>
         /// <param name="patchClass">Class to search for patches</param>
         /// <param name="assemblyPath">Path to assembly</param>
-        /// <param name="finalPath">Destinatoin of patched assembly</param>
+        /// <param name="finalPath">Destination of patched assembly</param>
         public static void Patch(Type patchClass, string assemblyPath, string finalPath)
         {
             var methods = patchClass.GetMethods()
@@ -38,23 +38,32 @@ namespace Amity
                 var attribute = (AmityPatch) entry.Value;
                 
                 var patchModule = ModuleDefMD.Load(patchClass.Module);
-                var patchInstructions = FindMethod(patchModule, patchClass, method.Name).Body.Instructions;
+                var patchMethod = FindMethod(patchModule, patchClass, method.Name);
+                var patchInstructions = patchMethod.Body.Instructions;
 
                 var assemblyModule = ModuleDefMD.Load(assemblyPath);
                 var assemblyMethod = FindMethod(assemblyModule, attribute.Type, attribute.MethodName,  attribute.Parameters);
                 var assemblyInstructions = assemblyMethod.Body.Instructions;
+                
+                foreach (var patchInstruction in patchInstructions)
+                {
+                    Console.WriteLine(patchInstruction);
+                }
                 
                 List<Instruction> patchedInstructions;
                 
                 switch (attribute.CodeMode)
                 {
                     case AmityPatch.Mode.Prefix:
+                        MergeVariables(ref assemblyMethod, patchMethod, AmityPatch.Mode.Prefix);
                         patchedInstructions = MergeInstructions(patchInstructions, assemblyInstructions);
                         break;
                     case AmityPatch.Mode.Postfix:
+                        MergeVariables(ref assemblyMethod, patchMethod, AmityPatch.Mode.Postfix);
                         patchedInstructions = MergeInstructions(assemblyInstructions, patchInstructions);
                         break;
                     case AmityPatch.Mode.Replace:
+                        MergeVariables(ref assemblyMethod, patchMethod, AmityPatch.Mode.Replace);
                         patchedInstructions = (List<Instruction>) patchInstructions;
                         break;
                     case AmityPatch.Mode.Custom:
@@ -90,6 +99,72 @@ namespace Amity
                 .FindMethods(methodName)
                 .First(m => parameters == null || CompareParameters(m.Parameters, parameters));
 
+        }
+
+        /// <summary>
+        /// Merge variables of two methods while keeping <code>baseMethod</code>'s return type
+        /// </summary>
+        /// <param name="baseMethod">Original method to add the variables to</param>
+        /// <param name="newMethod">Method to get the new variables from</param>
+        /// <param name="mode">Position of code</param>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="mode"/> is unsupported</exception>
+        private static void MergeVariables(ref MethodDef baseMethod, MethodDef newMethod, AmityPatch.Mode mode)
+        {
+            var tempList = new LocalList();
+            
+            var baseVariables = baseMethod.Body.Variables;
+            var newVariables = newMethod.Body.Variables;
+            
+            if (newVariables.Count == 0) return;
+            if (newMethod.HasReturnType) newVariables.RemoveAt(0);
+
+            // ReSharper disable once SwitchStatementMissingSomeCases
+            switch (mode)
+            {
+                case AmityPatch.Mode.Prefix:
+                    if (baseMethod.HasReturnType)
+                    {
+                        tempList.Add(baseVariables[0]);
+                        baseVariables.RemoveAt(0);
+                    }
+
+                    foreach (var variable in newVariables)
+                    {
+                        tempList.Add(variable);
+                    }
+                
+                    foreach (var variable in baseVariables)
+                    {
+                        tempList.Add(variable);
+                    }
+                    break;
+                case AmityPatch.Mode.Postfix:
+                    foreach (var variable in baseVariables)
+                    {
+                        tempList.Add(variable);
+                    }
+
+                    foreach (var variable in newVariables)
+                    {
+                        tempList.Add(variable);
+                    }
+                    break;
+                case AmityPatch.Mode.Replace:
+                    tempList.Add(baseVariables[0]);
+                    foreach (var variable in newVariables)
+                    {
+                        tempList.Add(variable);
+                    }
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
+            
+            baseMethod.Body.Variables.Clear();
+            foreach (var variable in tempList)
+            {
+                baseMethod.Body.Variables.Add(variable);
+            }
         }
 
         /// <summary>
