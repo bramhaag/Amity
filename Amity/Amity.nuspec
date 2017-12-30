@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>bramhaag.Amity</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>bramhaag</authors>
+    <owners>bramhaag</owners>
+    <licenseUrl>https://github.com/bramhaag/Amity/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/bramhaag/Amity</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Utility to create simple patches to exitsing assemblies</description>
+    <releaseNotes>Changed Amity class to AmityInstance</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>patch cil</tags>
+  </metadata>
+  <files>
+    <file src="../README.md" target="" />
+  </files>
+</package>
